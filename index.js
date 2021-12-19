@@ -21,16 +21,22 @@ var breads;
 var platforms;
 var cursors;
 var enemies;
+var traps;
 var score = 0;
 var gameOver = false;
 var scoreText;
 var gameOverText;
 var artefact;
 var cityTile;
+var breadDrop = 600;
 var enemyData = [
   { x: 550, y: 400 },
   { x: 500, y: 600 },
   { x: 600, y: 700 },
+  { x: 1900, y: 600 },
+  { x: 1300, y: 600 },
+  { x: 2600, y: 500 },
+  { x: 4100, y: 400 },
 ];
 let stepLimit = 100;
 var game = new Phaser.Game(config);
@@ -61,7 +67,7 @@ function create() {
   platforms.create(50, 550, "ground");
   platforms.create(630, 450, "ground");
   platforms.create(1950, 750, "ground");
-  platforms.create(2500, 645, "ground");
+  platforms.create(2450, 645, "ground");
   platforms.create(2800, 550, "ground").setScale(0.5, 1).refreshBody();
   platforms.create(2400, 450, "ground").setScale(0.75, 1).refreshBody();
   platforms.create(2170, 350, "ground").setScale(0.45, 1).refreshBody();
@@ -82,10 +88,14 @@ function create() {
   traps.create(2400, 485, "trap_upsidedown");
   artefacts = this.physics.add.staticGroup();
   artefacts.create(4300, 700, "artefact");
+  traps.getChildren().forEach((trap) => {
+    trap.setTint(0x414f5c);
+  });
 
   player = this.physics.add.sprite(100, 650, "pigeon");
   player.setBounce(0.1);
-  //player.setCollideWorldBounds(true);
+  player.body.onWorldBounds = true;
+  player.setCollideWorldBounds(true);
   background.setScrollFactor(0);
   this.cameras.main.setBounds(0, 0, 5000, 755);
   this.cameras.main.startFollow(player);
@@ -156,6 +166,7 @@ function create() {
     fill: "#000",
   });
   scoreText.setScrollFactor(0);
+  this.physics.world.wrap(player, 40);
 
   gameOverText = this.add.text(690, 150, "", {
     fontSize: "32px",
@@ -168,7 +179,8 @@ function create() {
   this.physics.add.collider(breads, platforms);
 
   this.physics.add.overlap(player, breads, collectbread, null, this);
-  // this.physics.add.collider(player, enemies, hitTrap, null, this);
+
+  this.physics.add.collider(player, enemies, hitTrap, null, this);
   this.physics.add.collider(player, traps, hitTrap, null, this);
 
   //collider dla wrogow, chlebkow wchodzacych na pulapki
@@ -200,7 +212,9 @@ function update() {
   if (cursors.up.isDown && player.body.touching.down) {
     player.setVelocityY(-350);
   }
-
+  if (player.y > 710) {
+    gameOver = true;
+  }
   enemies.getChildren().forEach(function (enemy) {
     snakeBehaviour(enemy);
     patrolPlatform(enemy);
@@ -288,7 +302,7 @@ function snakeBehaviour(enemy) {
       enemy.body.velocity.x = -enemy.normalVelocity;
     }
   }
-} //NIE DZIALA HEHE
+}
 function patrolPlatform(enemy) {
   platforms.getChildren().forEach((platform) => {
     // if enemy moving to right and has started to move over right edge of platform
@@ -299,26 +313,22 @@ function patrolPlatform(enemy) {
     }
     // else if enemy moving to left and has started to move over left edge of platform
     else if (enemy.body.velocity.x < 0 && enemy.x.left < platform.x.left) {
-      debugger;
-
       enemy.body.velocity.x *= -1; // reverse direction
     }
   });
 }
 function generateEnemy() {
-  for (let i = 0; i < 3; i++) {
-    enemies.create(
-      player.x + Math.random() * 600 + 300,
-      Phaser.Math.Between(200, 600),
-      "snake"
-    );
-    enemies.getChildren()[enemies.getChildren().length - 1].body.velocity.x =
-      Phaser.Math.Between(20, 70);
-    enemies.getChildren()[enemies.getChildren().length - 1].stepCount =
-      Phaser.Math.Between(10, 100);
-    enemies.getChildren()[enemies.getChildren().length - 1].normalVelocity =
-      enemies.getChildren()[enemies.getChildren().length - 1].body.velocity.x;
-  }
+  enemies.create(
+    player.x + Math.random() * 4000 + 300,
+    Phaser.Math.Between(200, 600),
+    "snake"
+  );
+  enemies.getChildren()[enemies.getChildren().length - 1].body.velocity.x =
+    Phaser.Math.Between(20, 70);
+  enemies.getChildren()[enemies.getChildren().length - 1].stepCount =
+    Phaser.Math.Between(10, 100);
+  enemies.getChildren()[enemies.getChildren().length - 1].normalVelocity =
+    enemies.getChildren()[enemies.getChildren().length - 1].body.velocity.x;
 }
 
 function showGameOver() {
