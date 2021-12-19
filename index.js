@@ -133,8 +133,8 @@ function create() {
     enemies.create(enemyData[i].x, enemyData[i].y, "snake");
   }
 
-  enemies.getChildren().forEach(function(enemy){
-		enemy.body.velocity.x = Phaser.Math.Between(20, 70);
+  enemies.getChildren().forEach(function (enemy) {
+    enemy.body.velocity.x = Phaser.Math.Between(20, 70);
     enemy.stepCount = Phaser.Math.Between(10, 100);
     enemy.normalVelocity = enemy.body.velocity.x;
   }, this);
@@ -171,8 +171,13 @@ function create() {
   this.physics.add.overlap(player, breads, collectbread, null, this);
 
   this.physics.add.collider(player, enemies, hitTrap, null, this);
-  this.physics.add.collider(player, traps, hitTrap, null, this);  
+
+
+  this.physics.add.collider(player, traps, hitTrap, null, this);
+  this.physics.add.collider(bread, traps, hitTrapBread, null, this);
+  //collider dla wrogow wchodzacych na pulapki
   this.physics.add.collider(enemies, traps, hitTrapEnemy, null, this);
+  //cityTile = game.add.tilesprite(0, 0, 960, 375, 'city')
 }
 
 function update() {
@@ -204,6 +209,7 @@ function update() {
     patrolPlatform(enemy)
 });}
 
+
 function collectbread(player, bread) {
   bread.disableBody(true, true);
 
@@ -216,9 +222,10 @@ function collectbread(player, bread) {
       breadDrop += 500
       breads.children.iterate(function (child) {
       child.enableBody(true, player.x + Math.random() * 600 + 300, 0, true, true);
+
     });
 
-    generateEnemy()
+    generateEnemy();
   }
 }
 function hitTrap(player, traps) {
@@ -233,75 +240,77 @@ function hitTrap(player, traps) {
 function hitTrapEnemy(enemy, traps) {
   this.physics.pause();
 
-  player.setTint(0xff0000);
+  enemy.setTint(0xff0000);
 
-  player.anims.play("turn");
+  enemy.anims.play("turn");
 }
- let stepLimit = 100;
-function snakeBehaviour(enemy)
-{
-  enemy.stepCount++;
-    // check if enemy's step counter has reach limit
-    if (enemy.stepCount > stepLimit) {
-        // reverse enemy direction
-        enemy.body.velocity.x *= -1;
-        // reset enemy's step counter
-        enemy.stepCount = 0;
-        // can add other code - change enemy animation, etc.
-    }
-    if(enemy.body.velocity.x < 0) enemy.anims.play("Sleft", true);
-    if(enemy.body.velocity.x > 0) enemy.anims.play("Sright", true);
-    if(enemy.body.velocity.x == 0) enemy.anims.play("Sstop", true);
-    // see if enemy and player within 400px of each other
-if (Math.abs(player.x - enemy.x) < 300 && player.y === enemy.y) {
 
+function hitTrapBread(bread, traps) {
+  this.physics.pause();
+
+  bread.setTint(0xff0000);
+
+  bread.anims.play("turn");
+}
+let stepLimit = 100;
+
+function snakeBehaviour(enemy) {
+  enemy.stepCount++;
+  // check if enemy's step counter has reach limit
+  if (enemy.stepCount > stepLimit) {
+    // reverse enemy direction
+    enemy.body.velocity.x *= -1;
+    // reset enemy's step counter
+    enemy.stepCount = 0;
+    // can add other code - change enemy animation, etc.
+  }
+  if (enemy.body.velocity.x < 0) enemy.anims.play("Sleft", true);
+  if (enemy.body.velocity.x > 0) enemy.anims.play("Sright", true);
+  if (enemy.body.velocity.x == 0) enemy.anims.play("Sstop", true);
+  // see if enemy and player within 400px of each other
+  if (Math.abs(player.x - enemy.x) < 300 && player.y === enemy.y) {
     // if player to left of enemy AND enemy moving to right (or not moving)
     if (player.x < enemy.x && enemy.body.velocity.x >= 0) {
-        // move enemy to left
-        enemy.body.velocity.x *= -1;
+      // move enemy to left
+      enemy.body.velocity.x *= -1;
     }
     // if player to right of enemy AND enemy moving to left (or not moving)
     else if (player.x > enemy.x && enemy.body.velocity.x <= 0) {
-        // move enemy to right
-        enemy.body.velocity.x *= -1;
+      // move enemy to right
+      enemy.body.velocity.x *= -1;
     }
-     if(enemy.body.velocity.x <= 50 && enemy.body.velocity.x >=0 ) {enemy.body.velocity.x *= 3}
-    else if(enemy.body.velocity.x >= -50 && enemy.body.velocity.x <=0 ) {enemy.body.velocity.x *= 3}
-
-}
-if (Math.abs(player.x - enemy.x) > 300) {
-
-  // if player to left of enemy AND enemy moving to right (or not moving)
-  if (enemy.body.velocity.x > 0) {
+    if (enemy.body.velocity.x <= 50 && enemy.body.velocity.x >= 0) {
+      enemy.body.velocity.x *= 3;
+    } else if (enemy.body.velocity.x >= -50 && enemy.body.velocity.x <= 0) {
+      enemy.body.velocity.x *= 3;
+    }
+  }
+  if (Math.abs(player.x - enemy.x) > 300) {
+    // if player to left of enemy AND enemy moving to right (or not moving)
+    if (enemy.body.velocity.x > 0) {
       // move enemy to left
       enemy.body.velocity.x = enemy.normalVelocity;
-  }
-  // if player to right of enemy AND enemy moving to left (or not moving)
-  else if (enemy.body.velocity.x < 0) {
+    }
+    // if player to right of enemy AND enemy moving to left (or not moving)
+    else if (enemy.body.velocity.x < 0) {
       // move enemy to right
-      enemy.body.velocity.x = - enemy.normalVelocity;
+      enemy.body.velocity.x = -enemy.normalVelocity;
+    }
   }
-}
-}//NIE DZIALA HEHE
+} //NIE DZIALA HEHE
 function patrolPlatform(enemy) {
-  platforms.getChildren().forEach(platform => {
-        // if enemy moving to right and has started to move over right edge of platform
-        if (enemy.body.velocity.x > 0 && enemy.x.right < platform.x.right) {
-          debugger
-    
-            enemy.body.velocity.x *= -1; // reverse direction
-        }
-        // else if enemy moving to left and has started to move over left edge of platform
-        else if (enemy.body.velocity.x < 0 && enemy.x.left < platform.x.left) {
-          debugger
-    
-            enemy.body.velocity.x *= -1; // reverse direction
-        }
+  platforms.getChildren().forEach((platform) => {
+    // if enemy moving to right and has started to move over right edge of platform
+    if (enemy.body.velocity.x > 0 && enemy.x.right < platform.x.right) {
+      enemy.body.velocity.x *= -1; // reverse direction
+    }
+    // else if enemy moving to left and has started to move over left edge of platform
+    else if (enemy.body.velocity.x < 0 && enemy.x.left < platform.x.left) {
+    enemy.body.velocity.x *= -1; // reverse direction
+    }
   });
-
 }
-function generateEnemy () {
-
+function generateEnemy() {
     enemies.create(player.x + Math.random() * 4000 + 300, Phaser.Math.Between(200, 600), 'snake');
     enemies.getChildren()[enemies.getChildren().length-1].body.velocity.x = Phaser.Math.Between(20, 70);
     enemies.getChildren()[enemies.getChildren().length-1].stepCount = Phaser.Math.Between(10, 100);
