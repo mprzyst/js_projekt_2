@@ -7,6 +7,7 @@ var config = {
     arcade: {
       gravity: { y: 500 },
       debug: false,
+      width: 5000,
     },
   },
   scene: {
@@ -73,7 +74,7 @@ function create() {
   platforms.create(2170, 350, "ground").setScale(0.45, 1).refreshBody();
   platforms.create(3100, 750, "ground").setScale(1, 1);
   platforms.create(3500, 750, "ground").setScale(0.5, 1).refreshBody();
-  platforms.create(4250, 750, "ground").setScale(2, 1).refreshBody();
+  platforms.create(4350, 750, "ground").setScale(2.5, 1).refreshBody();
   platforms.create(4250, 585, "ground").setScale(0.85, 1).refreshBody();
   platforms.create(4430, 700, "ground").setScale(0.5, 1).refreshBody();
   platforms.create(4000, 480, "ground");
@@ -87,14 +88,14 @@ function create() {
   traps.create(4230, 620, "trap_upsidedown");
   traps.create(2400, 485, "trap_upsidedown");
   artefacts = this.physics.add.staticGroup();
-  artefacts.create(4300, 700, "artefact");
+  artefacts.create(4700, 700, "artefact");
   traps.getChildren().forEach((trap) => {
     trap.setTint(0x414f5c);
   });
 
   player = this.physics.add.sprite(100, 650, "pigeon");
   player.setBounce(0.1);
-  player.body.onWorldBounds = true;
+  //player.body.onWorldBounds = true;
   player.setCollideWorldBounds(true);
   background.setScrollFactor(0);
   this.cameras.main.setBounds(0, 0, 5000, 755);
@@ -194,6 +195,7 @@ function create() {
 function update() {
   if (gameOver) {
     showGameOver();
+    this.physics.pause();
   }
   if (player.y > 800) {
     gameOver = true;
@@ -217,7 +219,6 @@ function update() {
   }
   enemies.getChildren().forEach(function (enemy) {
     snakeBehaviour(enemy);
-    patrolPlatform(enemy);
   });
 }
 
@@ -303,20 +304,6 @@ function snakeBehaviour(enemy) {
     }
   }
 }
-function patrolPlatform(enemy) {
-  platforms.getChildren().forEach((platform) => {
-    // if enemy moving to right and has started to move over right edge of platform
-    if (enemy.body.velocity.x > 0 && enemy.x.right < platform.x.right) {
-      debugger;
-
-      enemy.body.velocity.x *= -1; // reverse direction
-    }
-    // else if enemy moving to left and has started to move over left edge of platform
-    else if (enemy.body.velocity.x < 0 && enemy.x.left < platform.x.left) {
-      enemy.body.velocity.x *= -1; // reverse direction
-    }
-  });
-}
 function generateEnemy() {
   enemies.create(
     player.x + Math.random() * 4000 + 300,
@@ -332,6 +319,7 @@ function generateEnemy() {
 }
 
 function showGameOver() {
+  player.setTint(0xff0000);
   gameOverText.setText(
     "GAME OVER \n\nYour score: " + score + "\n\nPress F5 to play again."
   );
