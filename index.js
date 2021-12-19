@@ -18,7 +18,6 @@ var config = {
 
 var player;
 var breads;
-var bombs;
 var platforms;
 var cursors;
 var enemies;
@@ -27,9 +26,10 @@ var gameOver = false;
 var scoreText;
 var cityTile;
 var enemyData = [
-  { x: 770, y: 220 },
-  { x: 550, y: 250 },
-  { x: 450, y: 400 }
+  { x: 200, y: 500 },
+  { x: 550, y: 400 },
+  { x: 500, y: 600 },
+  { x: 600, y: 700 }
 ];
 var game = new Phaser.Game(config);
 
@@ -37,7 +37,6 @@ function preload() {
   this.load.image("city", "assets/city.png");
   this.load.image("ground", "assets/platform.png");
   this.load.image("bread", "assets/bread.png");
-  this.load.image("bomb", "assets/bomb.png");
   this.load.spritesheet("pigeon", "assets/pigeon.png", {
     frameWidth: 48,
     frameHeight: 48,
@@ -147,8 +146,6 @@ function create() {
     child.setBounceY(Phaser.Math.FloatBetween(0.1, 0.2));
   });
 
-  bombs = this.physics.add.group();
-
   scoreText = this.add.text(16, 16, "score: 0", {
     fontSize: "32px",
     fill: "#000",
@@ -158,7 +155,6 @@ function create() {
   this.physics.add.collider(player, platforms);
   this.physics.add.collider(enemies, platforms);
   this.physics.add.collider(breads, platforms);
-  this.physics.add.collider(bombs, platforms);
   this.physics.add.collider(breads, traps);
   this.physics.add.collider(enemies, traps);
 
@@ -228,17 +224,6 @@ function hitTrapEnemy(enemy, traps) {
   player.setTint(0xff0000);
 
   player.anims.play("turn");
-
-  gameOver = true;
-}
-function hitBomb(player, bomb) {
-  this.physics.pause();
-
-  player.setTint(0xff0000);
-
-  player.anims.play("turn");
-
-  gameOver = true;
 }
  let stepLimit = 100;
 function snakeBehaviour(enemy)
