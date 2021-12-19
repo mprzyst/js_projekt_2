@@ -18,7 +18,7 @@ var config = {
 
 var player;
 var breads;
-var bombs;
+var traps;
 var platforms;
 var cursors;
 var enemies;
@@ -53,16 +53,38 @@ function preload() {
     frameWidth: 48,
     frameHeight: 48,
   });
+  this.load.image("trap", "assets/trap.png");
+  this.load.image("trap_upsidedown", "assets/trap_upsidedown.png");
 }
 
 function create() {
   let background = this.add.tileSprite(0, 0, 1920, 755, "city");
   background.setOrigin(0);
   platforms = this.physics.add.staticGroup();
-  platforms.create(960, 830, "ground").setScale(6).refreshBody();
-  platforms.create(600, 400, "ground");
-  platforms.create(50, 250, "ground");
-  platforms.create(750, 220, "ground");
+  platforms.create(350, 830, "ground").setScale(6).refreshBody();
+  platforms.create(600, 645, "ground");
+  platforms.create(50, 550, "ground");
+  platforms.create(630, 450, "ground");
+  platforms.create(1950, 750, "ground");
+  platforms.create(2500, 645, "ground");
+  platforms.create(2800, 550, "ground").setScale(0.5, 1).refreshBody();
+  platforms.create(2400, 450, "ground").setScale(0.75, 1).refreshBody();
+  platforms.create(2170, 350, "ground").setScale(0.45, 1).refreshBody();
+  platforms.create(3100, 750, "ground").setScale(1, 1);
+  platforms.create(3500, 750, "ground").setScale(0.5, 1).refreshBody();
+  platforms.create(4250, 750, "ground").setScale(2, 1).refreshBody();
+  platforms.create(4250, 585, "ground").setScale(0.85, 1).refreshBody();
+  platforms.create(4430, 700, "ground").setScale(0.5, 1).refreshBody();
+  platforms.create(4000, 480, "ground");
+  traps = this.physics.add.staticGroup();
+  traps.create(2208, 733, "trap");
+  traps.create(50, 517, "trap");
+  traps.create(752, 615, "trap");
+  traps.create(990, 715, "trap");
+  traps.create(2298, 420, "trap");
+  traps.create(3100, 715, "trap");
+  traps.create(4230, 620, "trap_upsidedown");
+  traps.create(2400, 485, "trap_upsidedown");
 
   player = this.physics.add.sprite(100, 650, "pigeon");
   player.setBounce(0.1);
@@ -141,15 +163,22 @@ function create() {
     fontSize: "32px",
     fill: "#000",
   });
+  scoreText.setScrollFactor(0);
 
   this.physics.add.collider(player, platforms);
   this.physics.add.collider(enemies, platforms);
   this.physics.add.collider(breads, platforms);
   this.physics.add.collider(bombs, platforms);
+  //this.physics.add.collider(player, traps);
+  this.physics.add.collider(breads, traps);
+  this.physics.add.collider(bombs, traps);
 
   this.physics.add.overlap(player, breads, collectbread, null, this);
 
-  this.physics.add.collider(player, enemies, hitBomb, null, this);
+  this.physics.add.collider(player, enemies, hitTrap, null, this);
+  this.physics.add.collider(player, traps, hitTrap, null, this);
+  //collider dla wrogow wchodzacych na pulapki
+  //this.physics.add.collider(enemies, traps, hitTrap, null, this);
   //cityTile = game.add.tilesprite(0, 0, 960, 375, 'city')
 }
 
@@ -203,7 +232,7 @@ function collectbread(player, bread) {
   }
 }
 
-function hitBomb(player, bomb) {
+function hitTrap(player, traps) {
   this.physics.pause();
 
   player.setTint(0xff0000);
@@ -212,6 +241,18 @@ function hitBomb(player, bomb) {
 
   gameOver = true;
 }
+
+//zabijanie wrogów na trapach
+function hitTrapEnemy(enemy, traps) {
+  this.physics.pause();
+
+  player.setTint(0xff0000);
+
+  player.anims.play("turn");
+
+  gameOver = true;
+}
+
 // let stepLimit = 100;
 // function snakeBehaviour()
 // {
