@@ -24,13 +24,15 @@ var enemies;
 var score = 0;
 var gameOver = false;
 var scoreText;
+var gameOverText;
+var artefact;
 var cityTile;
 var enemyData = [
-  { x: 200, y: 500 },
   { x: 550, y: 400 },
   { x: 500, y: 600 },
   { x: 600, y: 700 },
 ];
+let stepLimit = 100;
 var game = new Phaser.Game(config);
 
 function preload() {
@@ -47,6 +49,7 @@ function preload() {
   });
   this.load.image("trap", "assets/trap.png");
   this.load.image("trap_upsidedown", "assets/trap_upsidedown.png");
+  this.load.image("artefact", "assets/portalofglory.png");
 }
 
 function create() {
@@ -77,6 +80,8 @@ function create() {
   traps.create(3100, 715, "trap");
   traps.create(4230, 620, "trap_upsidedown");
   traps.create(2400, 485, "trap_upsidedown");
+  artefacts = this.physics.add.staticGroup();
+  artefacts.create(4300, 700, "artefact");
 
   player = this.physics.add.sprite(100, 650, "pigeon");
   player.setBounce(0.1);
@@ -152,38 +157,43 @@ function create() {
   });
   scoreText.setScrollFactor(0);
 
+  gameOverText = this.add.text(690, 150, "", {
+    fontSize: "32px",
+    fill: "#000",
+  });
+  gameOverText.setScrollFactor(0);
+
   this.physics.add.collider(player, platforms);
   this.physics.add.collider(enemies, platforms);
   this.physics.add.collider(breads, platforms);
-  this.physics.add.collider(breads, traps);
-  this.physics.add.collider(enemies, traps);
 
   this.physics.add.overlap(player, breads, collectbread, null, this);
-
-  this.physics.add.collider(player, enemies, hitTrap, null, this);
-
+  // this.physics.add.collider(player, enemies, hitTrap, null, this);
   this.physics.add.collider(player, traps, hitTrap, null, this);
-  this.physics.add.collider(bread, traps, hitTrapBread, null, this);
-  //collider dla wrogow wchodzacych na pulapki
+
+  //collider dla wrogow, chlebkow wchodzacych na pulapki
+  this.physics.add.collider(breads, traps, hitTrapBread, null, this);
   this.physics.add.collider(enemies, traps, hitTrapEnemy, null, this);
-  //cityTile = game.add.tilesprite(0, 0, 960, 375, 'city')
+
+  //wygrywanie
+  this.physics.add.overlap(player, artefacts, showGameWon, null, this);
 }
 
 function update() {
   if (gameOver) {
-    return;
+    showGameOver();
+  }
+  if (player.y > 800) {
+    gameOver = true;
   }
   if (cursors.left.isDown) {
     player.setVelocityX(-200);
-
     player.anims.play("left", true);
   } else if (cursors.right.isDown) {
     player.setVelocityX(200);
-
     player.anims.play("right", true);
   } else {
     player.setVelocityX(0);
-
     player.anims.play("turn");
   }
 
@@ -202,7 +212,7 @@ function collectbread(player, bread) {
 
   //  Add and update the score
   score += 10;
-  scoreText.setText("Score: " + score);
+  scoreText.setText("score: " + score);
 
   //if (breads.countActive(true) === 0) {
   if (breads.countActive(true) < 3) {
@@ -222,29 +232,18 @@ function collectbread(player, bread) {
 }
 function hitTrap(player, traps) {
   this.physics.pause();
-
   player.setTint(0xff0000);
-
   player.anims.play("turn");
-
   gameOver = true;
 }
 function hitTrapEnemy(enemy, traps) {
-  this.physics.pause();
-
   enemy.setTint(0xff0000);
-
-  enemy.anims.play("turn");
+  enemy.disableBody(true, true);
 }
 
 function hitTrapBread(bread, traps) {
-  this.physics.pause();
-
-  bread.setTint(0xff0000);
-
-  bread.anims.play("turn");
+  bread.disableBody(true, true);
 }
-let stepLimit = 100;
 
 function snakeBehaviour(enemy) {
   enemy.stepCount++;
@@ -320,4 +319,20 @@ function generateEnemy() {
     enemies.getChildren()[enemies.getChildren().length - 1].normalVelocity =
       enemies.getChildren()[enemies.getChildren().length - 1].body.velocity.x;
   }
+}
+
+function showGameOver() {
+  gameOverText.setText(
+    "GAME OVER \n\nYour score: " + score + "\n\nPress F5 to play again."
+  );
+}
+
+function showGameWon(player, artefact) {
+  this.physics.pause();
+  player.setTint(0xd9a836);
+  gameOverText.setText(
+    "CONGRATS! PIGEONS RULE! \n\nYour score: " +
+      score +
+      "\n\nPress F5 to play again."
+  );
 }
