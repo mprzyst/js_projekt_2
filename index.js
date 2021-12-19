@@ -177,8 +177,9 @@ function create() {
 
   this.physics.add.collider(player, enemies, hitTrap, null, this);
   this.physics.add.collider(player, traps, hitTrap, null, this);
+  this.physics.add.collider(bread, traps, hitTrapBread, null, this);
   //collider dla wrogow wchodzacych na pulapki
-  //this.physics.add.collider(enemies, traps, hitTrap, null, this);
+  this.physics.add.collider(enemies, traps, hitTrapEnemy, null, this);
   //cityTile = game.add.tilesprite(0, 0, 960, 375, 'city')
 }
 
@@ -246,11 +247,17 @@ function hitTrap(player, traps) {
 function hitTrapEnemy(enemy, traps) {
   this.physics.pause();
 
-  player.setTint(0xff0000);
+  enemy.setTint(0xff0000);
 
-  player.anims.play("turn");
+  enemy.anims.play("turn");
+}
 
-  gameOver = true;
+function hitTrapBread(bread, traps) {
+  this.physics.pause();
+
+  bread.setTint(0xff0000);
+
+  bread.anims.play("turn");
 }
 
 // let stepLimit = 100;
