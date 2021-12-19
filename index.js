@@ -21,15 +21,20 @@ var breads;
 var platforms;
 var cursors;
 var enemies;
+var traps;
 var score = 0;
 var gameOver = false;
 var scoreText;
 var cityTile;
+var breadDrop = 600;
 var enemyData = [
-  { x: 200, y: 500 },
   { x: 550, y: 400 },
   { x: 500, y: 600 },
-  { x: 600, y: 700 }
+  { x: 600, y: 700 },
+  { x: 1900, y: 600 },
+  { x: 1300, y: 600 },
+  { x: 2600, y: 500 },
+  { x: 4100, y: 400 }
 ];
 var game = new Phaser.Game(config);
 
@@ -58,7 +63,7 @@ function create() {
   platforms.create(50, 550, "ground");
   platforms.create(630, 450, "ground");
   platforms.create(1950, 750, "ground");
-  platforms.create(2500, 645, "ground");
+  platforms.create(2450, 645, "ground");
   platforms.create(2800, 550, "ground").setScale(0.5, 1).refreshBody();
   platforms.create(2400, 450, "ground").setScale(0.75, 1).refreshBody();
   platforms.create(2170, 350, "ground").setScale(0.45, 1).refreshBody();
@@ -77,10 +82,14 @@ function create() {
   traps.create(3100, 715, "trap");
   traps.create(4230, 620, "trap_upsidedown");
   traps.create(2400, 485, "trap_upsidedown");
+  traps.getChildren().forEach( trap => {
+    trap.setTint(0x414F5C);
+  });
 
   player = this.physics.add.sprite(100, 650, "pigeon");
   player.setBounce(0.1);
-  //player.setCollideWorldBounds(true);
+  player.body.onWorldBounds = true;
+  player.setCollideWorldBounds(true);
   background.setScrollFactor(0);
   this.cameras.main.setBounds(0, 0, 5000, 755);
   this.cameras.main.startFollow(player);
@@ -151,6 +160,7 @@ function create() {
     fill: "#000",
   });
   scoreText.setScrollFactor(0);
+  this.physics.world.wrap(player, 40);
 
   this.physics.add.collider(player, platforms);
   this.physics.add.collider(enemies, platforms);
@@ -162,7 +172,7 @@ function create() {
 
   this.physics.add.collider(player, enemies, hitTrap, null, this);
   this.physics.add.collider(player, traps, hitTrap, null, this);  
-  this.physics.add.collider(enemies, traps, hitTrap, null, this);
+  this.physics.add.collider(enemies, traps, hitTrapEnemy, null, this);
 }
 
 function update() {
@@ -186,7 +196,9 @@ function update() {
   if (cursors.up.isDown && player.body.touching.down) {
     player.setVelocityY(-350);
   }
-
+  if(player.y > 710) {
+    gameOver = true;
+  }
   enemies.getChildren().forEach(function (enemy) {    
     snakeBehaviour(enemy)
     patrolPlatform(enemy)
@@ -200,9 +212,9 @@ function collectbread(player, bread) {
   scoreText.setText("Score: " + score);
 
   //if (breads.countActive(true) === 0) {
-    if (breads.countActive(true) < 3) {
-    //  A new batch of breads to collect
-    breads.children.iterate(function (child) {
+    if (breads.countActive(true) < 6 || player.x > breadDrop) {
+      breadDrop += 500
+      breads.children.iterate(function (child) {
       child.enableBody(true, player.x + Math.random() * 600 + 300, 0, true, true);
     });
 
@@ -290,10 +302,8 @@ function patrolPlatform(enemy) {
 }
 function generateEnemy () {
 
-  for (let i = 0; i < 3; i++) {
-    enemies.create(player.x + Math.random() * 600 + 300, Phaser.Math.Between(200, 600), 'snake');
+    enemies.create(player.x + Math.random() * 4000 + 300, Phaser.Math.Between(200, 600), 'snake');
     enemies.getChildren()[enemies.getChildren().length-1].body.velocity.x = Phaser.Math.Between(20, 70);
     enemies.getChildren()[enemies.getChildren().length-1].stepCount = Phaser.Math.Between(10, 100);
     enemies.getChildren()[enemies.getChildren().length-1].normalVelocity = enemies.getChildren()[enemies.getChildren().length-1].body.velocity.x;
-  }
 }
